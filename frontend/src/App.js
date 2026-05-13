@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, RefreshCw } from 'lucide-react'; 
+import toast, { Toaster } from 'react-hot-toast'; 
 import './App.css';
 
 const API_URL = "http://localhost:8000/logs";
@@ -8,8 +9,6 @@ function App() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  
-  // NEW: State for extra filters
   const [statusFilter, setStatusFilter] = useState("All");
   const [controllerFilter, setControllerFilter] = useState("All");
 
@@ -29,6 +28,7 @@ function App() {
       setLogs(data);
     } catch (error) {
       console.error("Error fetching data:", error);
+      toast.error("Failed to load records.");
     }
     setLoading(false);
   };
@@ -37,41 +37,40 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
+    const savePromise = fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+    });
 
-      if (!response.ok) {
-        // This catches the Pydantic validation errors from the backend
-        const errorData = await response.json();
-        const errorMessage = errorData.detail[0].msg || "Validation Error";
-        alert(`Invalid Input: ${errorMessage}`);
-        return;
-      }
-
-      setFormData({ ...formData, serial_number: '' });
-      fetchLogs();
-    } catch (error) {
-      alert("Connection error: Is the backend running?");
-    }
+    toast.promise(savePromise, {
+      loading: 'Saving log...',
+      success: () => {
+        setFormData({ ...formData, serial_number: '' });
+        fetchLogs();
+        return 'Log saved successfully!';
+      },
+      error: (err) => `Error: ${err.message}`,
+    });
   };
 
-  // NEW: Delete function
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this test record?")) {
       try {
         await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+        toast.success("Record deleted");
         fetchLogs();
       } catch (error) {
-        alert("Error deleting record");
+        toast.error("Error deleting record");
       }
     }
   };
 
-  // UPDATED: Multi-criteria filtering logic
+  const handleExport = () => {
+    window.location.href = `${API_URL}/export`;
+    toast.success("Downloading CSV...");
+  };
+
   const filteredLogs = logs.filter(log => {
     const matchesSearch = log.serial_number.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "All" || log.test_status === statusFilter;
@@ -81,13 +80,20 @@ function App() {
 
   return (
     <div className="container">
+      <Toaster position="top-right" />
+      
       <header className="header">
-        <div className="logo">SSD Test | <span className="sub-logo">SSD Data Consolidation</span></div>
-        <button className="refresh-btn" onClick={fetchLogs}>↻ Refresh</button>
+        <div className="logo">SSD Test | <span className="sub-logo">Data Center</span></div>
+        <div className="header-actions">
+           <button className="export-btn" onClick={handleExport}>Download CSV</button>
+           <button className="refresh-btn" onClick={fetchLogs} disabled={loading}>
+             <RefreshCw className={loading ? "spin" : ""} size={16} /> 
+             {loading ? " Loading..." : " Refresh"}
+           </button>
+        </div>
       </header>
 
       <main className="dashboard">
-        {/* INPUT SECTION */}
         <section className="form-card">
           <h2>Log Test Result</h2>
           <form onSubmit={handleSubmit} className="input-form">
@@ -102,7 +108,17 @@ function App() {
               />
             </div>
 
-            {/* 1. Controller Model Select Wrapper */}
+            <div className="form-group">
+              <label>Firmware Version</label>
+              <input 
+                type="text" 
+                value={formData.firmware}
+                onChange={e => setFormData({...formData, firmware: e.target.value})}
+                placeholder="e.g. 1.0.A"
+                required 
+              />
+            </div>
+
             <div className="form-group">
               <label>Controller Model</label>
               <div className="select-wrapper">
@@ -121,7 +137,6 @@ function App() {
                 <label>Temp (°C)</label>
                 <input type="number" value={formData.temperature} onChange={e => setFormData({...formData, temperature: e.target.value})} />
               </div>
-              {/* 2. Status Select Wrapper */}
               <div className="form-group">
                 <label>Status</label>
                 <div className="select-wrapper">
@@ -135,29 +150,37 @@ function App() {
               </div>
             </div>
 
-            <button type="submit" className="submit-btn">Save</button>
+            <button type="submit" className="submit-btn" disabled={loading}>
+              {loading ? "Processing..." : "Save Record"}
+            </button>
           </form>
         </section>
 
-        {/* VIEW SECTION */}
         <section className="table-card">
           <div className="table-header">
-            <h2>Database Records</h2>
-            {/* 3. Filter Controls (In the Table Header) */}
-            <div className="filter-controls">
-              <input type="text" className="search-bar" placeholder="Search Serial Number" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+            <h2>Database Records ({filteredLogs.length})</h2>
+              <div className="filter-controls">
+              <input 
+                type="text" 
+                className="search-bar" 
+                placeholder="Search Serial..." 
+                value={searchTerm} 
+                onChange={(e) => setSearchTerm(e.target.value)} 
+              />
               
+              {/* Restored Wrapper for Controller Filter */}
               <div className="select-wrapper filter-width">
                 <select className="filter-select" value={controllerFilter} onChange={(e) => setControllerFilter(e.target.value)}>
                   <option value="All">All Controllers</option>
-                  <option value="PS5026-E26">PS5026-E26 </option>
-                  <option value="PS5021-E21">PS5021-E21 </option>
-                  <option value="PS5018-E18">PS5018-E18 </option>
-                  <option value="PS5013-E13">PS5013-E13 </option>
+                  <option value="PS5026-E26">PS5026-E26</option>
+                  <option value="PS5021-E21">PS5021-E21</option>
+                  <option value="PS5018-E18">PS5018-E18</option>
+                  <option value="PS5013-E13">PS5013-E13</option>
                 </select>
                 <ChevronDown className="select-icon" size={16} />
               </div>
 
+              {/* Restored Wrapper for Status Filter */}
               <div className="select-wrapper filter-width">
                 <select className="filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
                   <option value="All">All Status</option>
@@ -171,12 +194,16 @@ function App() {
           </div>
           
           <div className="table-wrapper">
-            <table className="data-table">
+            {loading && logs.length === 0 ? (
+              <div className="loader">Initializing database connection...</div>
+            ) : (
+              <table className="data-table">
               <thead>
                 <tr>
                   <th>Timestamp</th>
                   <th>Serial Number</th>
                   <th>Controller</th>
+                  <th>Firmware</th> {/* Add this header */}
                   <th>Temp</th>
                   <th>Status</th>
                   <th>Actions</th>
@@ -188,6 +215,7 @@ function App() {
                     <td>{new Date(log.timestamp).toLocaleString('en-MY')}</td>
                     <td className="bold">{log.serial_number}</td>
                     <td>{log.controller}</td>
+                    <td>{log.firmware}</td> {/* Add this data cell */}
                     <td>{log.temperature}°C</td>
                     <td>
                       <span className={`badge ${log.test_status.toLowerCase()}`}>
@@ -201,6 +229,10 @@ function App() {
                 ))}
               </tbody>
             </table>
+            )}
+            {!loading && filteredLogs.length === 0 && (
+              <div className="loader">No records match your filters.</div>
+            )}
           </div>
         </section>
       </main>

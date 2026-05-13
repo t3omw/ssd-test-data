@@ -313,3 +313,37 @@ select:focus {
   border-radius: 20px !important;
   height: 38px;
 }
+
+/* Animation for the refresh icon */
+.spin {
+  animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Export Button Styling */
+.export-btn {
+  background-color: #10b981; /* Professional Green */
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-right: 10px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.export-btn:hover {
+  background-color: #059669;
+}
+
+.loader {
+  padding: 40px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
