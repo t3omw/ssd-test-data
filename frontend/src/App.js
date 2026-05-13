@@ -185,7 +185,7 @@ function App() {
               <tbody>
                 {filteredLogs.map((log) => (
                   <tr key={log.id}>
-                    <td>{new Date(log.timestamp).toLocaleTimeString()}</td>
+                    <td>{new Date(log.timestamp).toLocaleString('en-MY')}</td>
                     <td className="bold">{log.serial_number}</td>
                     <td>{log.controller}</td>
                     <td>{log.temperature}°C</td>

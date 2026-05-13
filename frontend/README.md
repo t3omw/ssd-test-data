@@ -1,70 +1,110 @@
-# Getting Started with Create React App
+SSD Test Data Consolidation Portal
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+🚀 Overview
 
-## Available Scripts
+This project is a full-stack data management system designed for semiconductor
+testing environments. It allows engineers to input SSD test results (Serial
+Numbers, Controller types, Temperatures, etc.), which are then automatically
+consolidated into a centralized PostgreSQL database with built-in validation and
+localized time-stamping for the Malaysia region.
 
-In the project directory, you can run:
+Key Features
 
-### `npm start`
+  - Real-time Data Consolidation: Synchronized pipeline between React and
+    PostgreSQL via a FastAPI REST layer.
+  - Hardware-Aware Validation: Implements strict data integrity rules using
+    Pydantic (e.g., temperature limits of -40°C to 125°C).
+  - Advanced Filtering: Instant client-side search and category filtering for
+    high-volume log analysis.
+  - Localized Timing: Automated timestamping synced to the Asia/Kuala_Lumpur
+    (MYT) timezone.
+  - Containerized Architecture: Fully dockerized stack for seamless deployment
+    and reproducibility.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+🛠 Tech Stack
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+  - Frontend: React.js, Lucide-React (Icons), CSS3
+  - Backend: Python 3.12, FastAPI, SQLAlchemy (ORM), Pydantic (Validation)
+  - Database: PostgreSQL 15
+  - Infrastructure: Docker, Docker Compose
 
-### `npm test`
+📦 Setup & Execution
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Option A: The "One-Click" Docker Way (Recommended)
 
-### `npm run build`
+This method spins up the entire stack (Frontend, Backend, and Database)
+automatically. Ensure Docker Desktop is running.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1.  Open your terminal in the root folder.
+2.  Run the following command:
+    docker-compose up --build
+3.  Access the portal:
+      - Frontend: http://localhost:3000
+      - Interactive API Docs: http://localhost:8000/docs
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Option B: Local Manual Setup (Development Mode)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+If you wish to run the components individually outside of Docker:
 
-### `npm run eject`
+1. Database
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Ensure a PostgreSQL instance is running on localhost:5432 and create a database
+named maistorage.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+2. Backend (FastAPI)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+1.  Navigate to the backend folder:
+    cd backend
+2.  Create and activate a Virtual Environment:
+    py -m venv venv
+    .\venv\Scripts\activate
+3.  Install dependencies:
+    pip install -r requirements.txt
+4.  Start the server:
+    uvicorn main:app --reload
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+3. Frontend (React)
 
-## Learn More
+1.  Navigate to the frontend folder:
+    cd frontend
+2.  Install dependencies:
+    npm install
+3.  Start the application:
+    npm start
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+📐 Design Decisions
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+1. Data Integrity & Validation
 
-### Code Splitting
+Using Pydantic schemas, the backend rejects invalid data before it reaches the
+database. This is critical in semiconductor manufacturing where "dirty data" can
+lead to incorrect failure analysis. We enforce strict ranges for operating
+temperatures and mandatory fields for SSD tracking.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+2. Timezone Management
 
-### Analyzing the Bundle Size
+Since MaiStorage operates in Malaysia, the system was configured to override the
+default UTC server time. By utilizing zoneinfo and tzdata, every record is
+stamped with a precise Malaysia (MYT) timestamp to ensure accurate log
+sequencing.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+3. Relational Database (PostgreSQL)
 
-### Making a Progressive Web App
+PostgreSQL was chosen over NoSQL alternatives to ensure ACID compliance. Given
+that test logs are highly structured and require strict traceability, a
+relational schema ensures that SSD records are never orphaned or corrupted.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+4. User Experience (UX) for Engineers
 
-### Advanced Configuration
+  - Search & Filter: Designed for "Power Users" who need to find specific
+    batches or controllers (e.g., PS5026-E26) across thousands of records.
+  - Clean UI: Minimized visual noise and removed browser-default "blue frame"
+    effects for a professional, focused engineering tool.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+🧪 API Endpoints
 
-### Deployment
+  - POST /logs: Validate and consolidate new test data to the DB.
+  - GET /logs: Retrieve all consolidated logs (Sorted by newest).
+  - DELETE /logs/{id}: Securely remove a specific test record.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Developed for the MaiStorage Technical Assessment - May 2026

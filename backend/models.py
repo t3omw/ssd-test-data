@@ -10,4 +10,4 @@ class SSDTestLog(Base):
     firmware = Column(String)
     test_status = Column(String) # Pass/Fail
     temperature = Column(Float)
-    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+    timestamp = Column(DateTime(timezone=True))
