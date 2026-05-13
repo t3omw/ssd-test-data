@@ -8,6 +8,8 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: maistorage
+      TZ: Asia/Kuala_Lumpur
+      PGTZ: Asia/Kuala_Lumpur 
     ports:
       - "5432:5432"
     volumes:

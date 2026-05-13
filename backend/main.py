@@ -1,13 +1,15 @@
 from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, Depends, HTTPException
+from sqlalchemy.orm import Session
+from datetime import datetime
+from zoneinfo import ZoneInfo
 import models
 import database
+import schemas
 
 app = FastAPI()
 
-# IMPORTANT: Allow React to talk to FastAPI
+# CORS configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,35 +17,34 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# This line creates the tables in Postgres automatically when you start the app
+# Create tables
 models.Base.metadata.create_all(bind=database.engine)
 
-# 1. THE CONSOLIDATION ENDPOINT (Input Data)
 @app.post("/logs")
-def create_ssd_log(data: dict, db: Session = Depends(database.get_db)):
-    # Create the database object
+def create_log(log_input: schemas.SSDLogCreate, db: Session = Depends(database.get_db)):
+    malaysia_tz = ZoneInfo("Asia/Kuala_Lumpur")
+    
     new_log = models.SSDTestLog(
-        serial_number=data.get("serial_number"),
-        controller=data.get("controller"),
-        firmware=data.get("firmware"),
-        test_status=data.get("test_status"),
-        temperature=data.get("temperature")
+        serial_number=log_input.serial_number,
+        controller=log_input.controller,
+        firmware=log_input.firmware,
+        test_status=log_input.test_status,
+        temperature=log_input.temperature,
+        timestamp=datetime.now(malaysia_tz)
     )
     db.add(new_log)
     db.commit()
     db.refresh(new_log)
-    return {"status": "success", "data": new_log}
+    return new_log
 
-# 2. THE VIEW ENDPOINT (Read Data)
 @app.get("/logs")
-def get_all_logs(db: Session = Depends(database.get_db)):
-    # Fetch all logs from DB sorted by newest first
+def get_logs(db: Session = Depends(database.get_db)):
     return db.query(models.SSDTestLog).order_by(models.SSDTestLog.timestamp.desc()).all()
 
 @app.delete("/logs/{log_id}")
 def delete_log(log_id: int, db: Session = Depends(database.get_db)):
     db_log = db.query(models.SSDTestLog).filter(models.SSDTestLog.id == log_id).first()
-    if db_log is None:
+    if not db_log:
         raise HTTPException(status_code=404, detail="Log not found")
     db.delete(db_log)
     db.commit()

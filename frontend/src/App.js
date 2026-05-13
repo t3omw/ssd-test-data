@@ -38,15 +38,24 @@ function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await fetch(API_URL, {
+      const response = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
+
+      if (!response.ok) {
+        // This catches the Pydantic validation errors from the backend
+        const errorData = await response.json();
+        const errorMessage = errorData.detail[0].msg || "Validation Error";
+        alert(`Invalid Input: ${errorMessage}`);
+        return;
+      }
+
       setFormData({ ...formData, serial_number: '' });
       fetchLogs();
     } catch (error) {
-      alert("Error saving data");
+      alert("Connection error: Is the backend running?");
     }
   };
 
@@ -118,8 +127,8 @@ function App() {
                 <div className="select-wrapper">
                   <select value={formData.test_status} onChange={e => setFormData({...formData, test_status: e.target.value})}>
                     <option value="Pass">Pass</option>
-                    <option value="Fail">Fail</option>
                     <option value="Warning">Warning</option>
+                    <option value="Fail">Fail</option>
                   </select>
                   <ChevronDown className="select-icon" size={16} />
                 </div>
@@ -136,13 +145,15 @@ function App() {
             <h2>Database Records</h2>
             {/* 3. Filter Controls (In the Table Header) */}
             <div className="filter-controls">
-              <input type="text" className="search-bar" placeholder="Search Serial..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+              <input type="text" className="search-bar" placeholder="Search Serial Number" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
               
               <div className="select-wrapper filter-width">
                 <select className="filter-select" value={controllerFilter} onChange={(e) => setControllerFilter(e.target.value)}>
                   <option value="All">All Controllers</option>
-                  <option value="PS5026-E26">PS5026-E26</option>
-                  <option value="PS5021-E21">PS5021-E21</option>
+                  <option value="PS5026-E26">PS5026-E26 </option>
+                  <option value="PS5021-E21">PS5021-E21 </option>
+                  <option value="PS5018-E18">PS5018-E18 </option>
+                  <option value="PS5013-E13">PS5013-E13 </option>
                 </select>
                 <ChevronDown className="select-icon" size={16} />
               </div>
@@ -151,6 +162,7 @@ function App() {
                 <select className="filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
                   <option value="All">All Status</option>
                   <option value="Pass">Pass</option>
+                  <option value="Warning">Warning</option>
                   <option value="Fail">Fail</option>
                 </select>
                 <ChevronDown className="select-icon" size={16} />
