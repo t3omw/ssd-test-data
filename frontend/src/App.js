@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ChevronDown, RefreshCw } from 'lucide-react'; 
 import './App.css';
 
 const API_URL = "http://localhost:8000/logs";
@@ -72,7 +73,7 @@ function App() {
   return (
     <div className="container">
       <header className="header">
-        <div className="logo">MaiStorage | <span className="sub-logo">SSD Data Consolidation</span></div>
+        <div className="logo">SSD Test | <span className="sub-logo">SSD Data Consolidation</span></div>
         <button className="refresh-btn" onClick={fetchLogs}>↻ Refresh</button>
       </header>
 
@@ -87,19 +88,23 @@ function App() {
                 type="text" 
                 value={formData.serial_number}
                 onChange={e => setFormData({...formData, serial_number: e.target.value})}
-                placeholder="e.g. MS-E26-2024"
+                placeholder="e.g. AB-C22-2026"
                 required 
               />
             </div>
 
+            {/* 1. Controller Model Select Wrapper */}
             <div className="form-group">
               <label>Controller Model</label>
-              <select value={formData.controller} onChange={e => setFormData({...formData, controller: e.target.value})}>
-                <option value="PS5026-E26">PS5026-E26 (Gen5)</option>
-                <option value="PS5021-E21">PS5021-E21 (Gen4 High Perf)</option>
-                <option value="PS5018-E18">PS5018-E18 (Gen4)</option>
-                <option value="PS5013-E13">PS5013-E13 (Gen3)</option>
-              </select>
+              <div className="select-wrapper">
+                <select value={formData.controller} onChange={e => setFormData({...formData, controller: e.target.value})}>
+                  <option value="PS5026-E26">PS5026-E26 (Gen5)</option>
+                  <option value="PS5021-E21">PS5021-E21 (Gen4 High Perf)</option>
+                  <option value="PS5018-E18">PS5018-E18 (Gen4)</option>
+                  <option value="PS5013-E13">PS5013-E13 (Gen3)</option>
+                </select>
+                <ChevronDown className="select-icon" size={16} />
+              </div>
             </div>
 
             <div className="form-row">
@@ -107,17 +112,21 @@ function App() {
                 <label>Temp (°C)</label>
                 <input type="number" value={formData.temperature} onChange={e => setFormData({...formData, temperature: e.target.value})} />
               </div>
+              {/* 2. Status Select Wrapper */}
               <div className="form-group">
                 <label>Status</label>
-                <select value={formData.test_status} onChange={e => setFormData({...formData, test_status: e.target.value})}>
-                  <option value="Pass">Pass</option>
-                  <option value="Fail">Fail</option>
-                  <option value="Warning">Warning</option>
-                </select>
+                <div className="select-wrapper">
+                  <select value={formData.test_status} onChange={e => setFormData({...formData, test_status: e.target.value})}>
+                    <option value="Pass">Pass</option>
+                    <option value="Fail">Fail</option>
+                    <option value="Warning">Warning</option>
+                  </select>
+                  <ChevronDown className="select-icon" size={16} />
+                </div>
               </div>
             </div>
 
-            <button type="submit" className="submit-btn">Consolidate to Master DB</button>
+            <button type="submit" className="submit-btn">Save</button>
           </form>
         </section>
 
@@ -125,27 +134,27 @@ function App() {
         <section className="table-card">
           <div className="table-header">
             <h2>Database Records</h2>
+            {/* 3. Filter Controls (In the Table Header) */}
             <div className="filter-controls">
-              <input 
-                type="text" 
-                className="search-bar" 
-                placeholder="Search Serial..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <select className="filter-select" value={controllerFilter} onChange={(e) => setControllerFilter(e.target.value)}>
-                <option value="All">All Controllers</option>
-                <option value="PS5026-E26">PS5026-E26</option>
-                <option value="PS5021-E21">PS5021-E21</option>
-                <option value="PS5018-E18">PS5018-E18</option>
-                <option value="PS5013-E13">PS5013-E13</option>
-              </select>
-              <select className="filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-                <option value="All">All Status</option>
-                <option value="Pass">Pass</option>
-                <option value="Fail">Fail</option>
-                <option value="Warning">Warning</option>
-              </select>
+              <input type="text" className="search-bar" placeholder="Search Serial..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+              
+              <div className="select-wrapper filter-width">
+                <select className="filter-select" value={controllerFilter} onChange={(e) => setControllerFilter(e.target.value)}>
+                  <option value="All">All Controllers</option>
+                  <option value="PS5026-E26">PS5026-E26</option>
+                  <option value="PS5021-E21">PS5021-E21</option>
+                </select>
+                <ChevronDown className="select-icon" size={16} />
+              </div>
+
+              <div className="select-wrapper filter-width">
+                <select className="filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                  <option value="All">All Status</option>
+                  <option value="Pass">Pass</option>
+                  <option value="Fail">Fail</option>
+                </select>
+                <ChevronDown className="select-icon" size={16} />
+              </div>
             </div>
           </div>
           
