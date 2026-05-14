@@ -1,7 +1,6 @@
 from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 
-# Schema for incoming data (POST)
 class SSDLogCreate(BaseModel):
     serial_number: str = Field(..., min_length=1)
     controller: str = Field(..., min_length=1)
@@ -9,7 +8,15 @@ class SSDLogCreate(BaseModel):
     test_status: str = Field(..., pattern="^(Pass|Fail|Warning)$")
     temperature: float = Field(..., ge=-40, le=125)
 
-    @field_validator('serial_number', 'controller', 'firmware')
+    @field_validator('firmware')
+    @classmethod
+    def validate_firmware(cls, v: str):
+        # Check if the user input looks like a negative number
+        if v.strip().startswith('-'):
+            raise ValueError('Firmware version cannot be negative')
+        return v
+
+    @field_validator('serial_number', 'controller')
     @classmethod
     def not_empty(cls, v: str):
         if not v.strip():

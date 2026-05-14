@@ -24,6 +24,11 @@ services:
       DATABASE_URL: postgresql://user:password@db:5432/maistorage
     depends_on:
       - db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   frontend:
     build: ./frontend

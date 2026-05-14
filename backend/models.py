@@ -11,3 +11,4 @@ class SSDTestLog(Base):
     test_status = Column(String) # Pass/Fail
     temperature = Column(Float)
     timestamp = Column(DateTime(timezone=True))
+    ai_status = Column(String, nullable=True)

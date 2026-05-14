@@ -4,6 +4,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import './App.css';
 
 const API_URL = "http://localhost:8000/logs";
+const HEALTH_URL = "http://localhost:8000/health";
 
 function App() {
   const [logs, setLogs] = useState([]);
@@ -11,6 +12,9 @@ function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [controllerFilter, setControllerFilter] = useState("All");
+  
+  // System Info State
+  const [sysInfo, setSysInfo] = useState({ status: "Connecting...", database: "Checking...", version: "1.0.4" });
 
   const [formData, setFormData] = useState({
     serial_number: '',
@@ -20,6 +24,7 @@ function App() {
     temperature: 35
   });
 
+  // Fetch Logic: Test Logs
   const fetchLogs = async () => {
     setLoading(true);
     try {
@@ -33,24 +38,58 @@ function App() {
     setLoading(false);
   };
 
-  useEffect(() => { fetchLogs(); }, []);
+  // Fetch Logic: System Health
+  const fetchHealth = async () => {
+    try {
+      const res = await fetch(HEALTH_URL);
+      if (res.ok) {
+        const data = await res.json();
+        setSysInfo(data);
+      } else {
+        throw new Error();
+      }
+    } catch {
+      setSysInfo({ status: "Offline", database: "Disconnected", version: "1.0.4" });
+    }
+  };
+
+  // Combined Lifecycle Hook
+  useEffect(() => { 
+    fetchLogs(); 
+    fetchHealth();
+    
+    // Auto-refresh health status every 10 seconds (Observability)
+    const interval = setInterval(fetchHealth, 10000); 
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const savePromise = fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData),
-    });
+    
+    const savePromise = async () => {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
 
-    toast.promise(savePromise, {
+      if (!response.ok) {
+        const errorData = await response.json();
+        // This extracts the specific message from Pydantic (e.g., "Firmware version cannot be negative")
+        const msg = errorData.detail?.[0]?.msg || "Validation Failed";
+        throw new Error(msg);
+      }
+      return response.json();
+    };
+
+    toast.promise(savePromise(), {
       loading: 'Saving log...',
       success: () => {
         setFormData({ ...formData, serial_number: '' });
         fetchLogs();
-        return 'Log saved successfully!';
+        // return 'Log saved successfully!';
       },
-      error: (err) => `Error: ${err.message}`,
+      error: (err) => `${err.message}`,
     });
   };
 
@@ -58,7 +97,7 @@ function App() {
     if (window.confirm("Are you sure you want to delete this test record?")) {
       try {
         await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-        toast.success("Record deleted");
+        // toast.success("Record deleted");
         fetchLogs();
       } catch (error) {
         toast.error("Error deleting record");
@@ -68,7 +107,7 @@ function App() {
 
   const handleExport = () => {
     window.location.href = `${API_URL}/export`;
-    toast.success("Downloading CSV...");
+    // toast.success("Downloading CSV...");
   };
 
   const filteredLogs = logs.filter(log => {
@@ -80,7 +119,7 @@ function App() {
 
   return (
     <div className="container">
-      <Toaster position="top-right" />
+      <Toaster position="top-center" />
       
       <header className="header">
         <div className="logo">SSD Test | <span className="sub-logo">Data Center</span></div>
@@ -151,14 +190,14 @@ function App() {
             </div>
 
             <button type="submit" className="submit-btn" disabled={loading}>
-              {loading ? "Processing..." : "Save Record"}
+              {loading ? "Processing..." : "Save"}
             </button>
           </form>
         </section>
 
         <section className="table-card">
           <div className="table-header">
-            <h2>Database Records ({filteredLogs.length})</h2>
+            <h2>Database Records</h2>
               <div className="filter-controls">
               <input 
                 type="text" 
@@ -168,7 +207,6 @@ function App() {
                 onChange={(e) => setSearchTerm(e.target.value)} 
               />
               
-              {/* Restored Wrapper for Controller Filter */}
               <div className="select-wrapper filter-width">
                 <select className="filter-select" value={controllerFilter} onChange={(e) => setControllerFilter(e.target.value)}>
                   <option value="All">All Controllers</option>
@@ -180,7 +218,6 @@ function App() {
                 <ChevronDown className="select-icon" size={16} />
               </div>
 
-              {/* Restored Wrapper for Status Filter */}
               <div className="select-wrapper filter-width">
                 <select className="filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
                   <option value="All">All Status</option>
@@ -200,10 +237,11 @@ function App() {
               <table className="data-table">
               <thead>
                 <tr>
+                  <th>ID</th>
                   <th>Timestamp</th>
                   <th>Serial Number</th>
                   <th>Controller</th>
-                  <th>Firmware</th> {/* Add this header */}
+                  <th>Firmware</th>
                   <th>Temp</th>
                   <th>Status</th>
                   <th>Actions</th>
@@ -212,10 +250,11 @@ function App() {
               <tbody>
                 {filteredLogs.map((log) => (
                   <tr key={log.id}>
+                    <td className="id-cell">{log.id}</td>
                     <td>{new Date(log.timestamp).toLocaleString('en-MY')}</td>
                     <td className="bold">{log.serial_number}</td>
                     <td>{log.controller}</td>
-                    <td>{log.firmware}</td> {/* Add this data cell */}
+                    <td>{log.firmware}</td>
                     <td>{log.temperature}°C</td>
                     <td>
                       <span className={`badge ${log.test_status.toLowerCase()}`}>
@@ -236,6 +275,25 @@ function App() {
           </div>
         </section>
       </main>
+
+      {/* PLACED CORRECTLY: OUTSIDE THE CARDS AT THE BOTTOM */}
+      <footer className="system-footer">
+        <div className="sys-item">
+          <strong>System Status:</strong> 
+          <span className={sysInfo.status === "Online" ? "status-green" : "status-red"}>
+            ● {sysInfo.status}
+          </span>
+        </div>
+        <div className="sys-item">
+          <strong>Database:</strong> {sysInfo.database}
+        </div>
+        <div className="sys-item">
+          <strong>Deployment Image:</strong>v{sysInfo.version}
+        </div>
+        <div className="sys-item">
+          <strong>Region:</strong>MYT (UTC+8)
+        </div>
+      </footer>
     </div>
   );
 }

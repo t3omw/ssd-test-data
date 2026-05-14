@@ -347,3 +347,41 @@ select:focus {
   color: #666;
   font-style: italic;
 }
+
+.system-footer {
+  margin-top: 30px;
+  padding: 15px;
+  background: #222; /* Dark industrial look */
+  color: #aaa;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.status-green { color: #28a745; margin-left: 5px; }
+.status-red { color: #dc3545; margin-left: 5px; }
+
+.sys-item {
+  display: flex;
+  align-items: center;
+}
+
+/* Ensure the AI status badge looks distinct in the table */
+.badge.predictive {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+}
+
+.id-cell {
+  color: #222;
+  font-family: monospace;
+  font-weight: bold;
+}
+
+/* Ensure the table doesn't get too cramped with the extra column */
+.data-table th, .data-table td {
+  padding: 12px 8px;
+  font-size: 13px;
+}

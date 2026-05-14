@@ -1,19 +1,15 @@
-# Use Python 3.12
-FROM python:3.12-slim
-
-# Install system dependencies for PostgreSQL (psycopg2)
-RUN apt-get update && apt-get install -y libpq-dev gcc
-
-# Set work directory
+# Stage 1: Build stage
+FROM python:3.12-slim as builder
 WORKDIR /app
-
-# Copy requirements and install
-# Note: You need a requirements.txt file in your backend folder
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --user --no-cache-dir -r requirements.txt
 
-# Copy the rest of the code
+# Stage 2: Final Runtime stage
+FROM python:3.12-slim
+WORKDIR /app
+# Copy only the installed packages from the builder
+COPY --from=builder /root/.local /root/.local
 COPY . .
 
-# Command to run the API
+ENV PATH=/root/.local/bin:$PATH
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
