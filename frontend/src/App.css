@@ -20,7 +20,6 @@ body {
   padding: 20px;
 }
 
-/* Header */
 .header {
   display: flex;
   justify-content: space-between;
@@ -51,14 +50,12 @@ body {
 
 .refresh-btn:hover { background: #eee; }
 
-/* Dashboard Layout */
 .dashboard {
   display: grid;
   grid-template-columns: 1fr 2fr;
   gap: 30px;
 }
 
-/* Cards */
 .form-card, .table-card {
   background: white;
   padding: 25px;
@@ -74,7 +71,6 @@ h2 {
   padding-bottom: 10px;
 }
 
-/* Form Styles */
 .input-form {
   display: flex;
   flex-direction: column;
@@ -142,7 +138,6 @@ input, select {
 
 .bold { font-weight: 600; }
 
-/* Status Badges */
 .badge {
   padding: 4px 8px;
   border-radius: 12px;
@@ -154,25 +149,24 @@ input, select {
 .badge.pass { background: #d4edda; color: var(--success); }
 .badge.fail { background: #f8d7da; color: var(--danger); }
 
-/* Responsive */
 @media (max-width: 900px) {
   .dashboard { grid-template-columns: 1fr; }
 }
 
 .table-header {
   display: flex;
-  justify-content: space-between; /* Pushes Title to left, Filters to right */
-  align-items: center;            /* Vertically centers everything */
+  justify-content: space-between; 
+  align-items: center;            
   margin-bottom: 20px;
   gap: 20px;
-  flex-wrap: wrap;                /* Prevents squishing on smaller screens */
+  flex-wrap: wrap;               
 }
 
 .table-header h2 {
-  margin: 0;                      /* Removes default padding that causes misalignment */
-  border-bottom: none;            /* Cleaner look in the header */
+  margin: 0;                      
+  border-bottom: none;            
   padding-bottom: 0;
-  white-space: nowrap;            /* Keeps the title on one line */
+  white-space: nowrap;            
 }
 
 .search-bar {
@@ -204,16 +198,15 @@ input, select {
 
 .filter-controls {
   display: flex;
-  align-items: center;            /* Ensures Search and Selects line up perfectly */
+  align-items: center;            
   gap: 12px;
 }
 
 .filter-select {
-  appearance: auto;               /* Restores the standard browser arrow */
-  -webkit-appearance: menulist;   /* Safari fix */
-  padding-right: 100px;            /* Adds space so text doesn't hit the arrow */
-  cursor: pointer;
-  min-width: 140px;               /* Prevents the box from being too narrow */
+  appearance: auto;               
+  -webkit-appearance: menulist;   
+  padding-right: 100px;            
+  min-width: 140px;               
 }
 
 .delete-btn {
@@ -250,8 +243,8 @@ input, select {
 .input-form select, 
 .input-form input {
   height: 40px;
-  width: 100%;             /* Ensure they fill the 1fr 1fr grid columns */
-  padding: 0 12px;         /* Vertical padding removed to let height/line-height control centering */
+  width: 100%;             
+  padding: 0 12px;         
   border: 1px solid #ddd;
   border-radius: 6px;
   font-size: 14px;
@@ -263,11 +256,10 @@ input, select {
 }
 
 .input-form select {
-  appearance: auto;        /* Ensures the dropdown arrow is visible and centered */
+  appearance: auto;       
   cursor: pointer;
 }
 
-/* --- Global Focus Reset (Removes Blue Frame) --- */
 input:focus, 
 select:focus {
   outline: none !important;
@@ -275,7 +267,6 @@ select:focus {
   border-color: #ddd !important;
 }
 
-/* --- The Magic Wrapper --- */
 .select-wrapper {
   position: relative;
   display: flex;
@@ -283,38 +274,32 @@ select:focus {
   width: 100%;
 }
 
-/* Hide the default browser arrow */
 .select-wrapper select {
   appearance: none;
   -webkit-appearance: none;
   width: 100%;
   cursor: pointer;
-  padding-right: 35px !important; /* Make room for the icon */
+  padding-right: 35px !important; 
 }
 
-/* Position the Lucide Icon */
 .select-icon {
   position: absolute;
-  /* MOVE THE ARROW LEFT: increase this number (e.g., 25px) */
   right: 12px; 
   
   color: #888;
-  pointer-events: none; /* Allows click to go through icon to the select */
+  pointer-events: none; 
 }
 
-/* Ensure filter boxes don't take full width */
 .filter-width {
   width: auto;
   min-width: 160px;
 }
 
-/* Match your filter pill style if needed */
 .filter-select {
   border-radius: 20px !important;
   height: 38px;
 }
 
-/* Animation for the refresh icon */
 .spin {
   animation: rotate 1s linear infinite;
 }
@@ -324,9 +309,8 @@ select:focus {
   to { transform: rotate(360deg); }
 }
 
-/* Export Button Styling */
 .export-btn {
-  background-color: #10b981; /* Professional Green */
+  background-color: #10b981; 
   color: white;
   border: none;
   padding: 8px 16px;
@@ -351,7 +335,7 @@ select:focus {
 .system-footer {
   margin-top: 30px;
   padding: 15px;
-  background: #222; /* Dark industrial look */
+  background: #222; 
   color: #aaa;
   border-radius: 8px;
   display: flex;
@@ -367,21 +351,41 @@ select:focus {
   align-items: center;
 }
 
-/* Ensure the AI status badge looks distinct in the table */
-.badge.predictive {
-  background: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeeba;
-}
-
 .id-cell {
   color: #222;
   font-family: monospace;
   font-weight: bold;
 }
 
-/* Ensure the table doesn't get too cramped with the extra column */
 .data-table th, .data-table td {
   padding: 12px 8px;
   font-size: 13px;
+}
+
+.insight-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.data-table th.text-center, 
+.data-table td.text-center {
+  text-align: center !important;
+}
+
+.analysis-normal {
+  color: #222 !important;
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.analysis-predictive {
+  color: #dc3545 !important; 
+  font-weight: 500;
+  text-transform: uppercase; 
+  font-size: 12px;
+  text-align: center;
+  display: block; 
 }

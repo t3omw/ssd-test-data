@@ -48,8 +48,10 @@ If you wish to run the components individually outside of Docker:
 
 1. Database
 
-Ensure a PostgreSQL instance is running on localhost:5432 and create a database
-named maistorage.
+Ensure a PostgreSQL instance is running on localhost:5432 and create a database named maistorage.
+
+1. Open a terminal in root folder and run
+    docker-compose up -d db
 
 2. Backend (FastAPI)
 
@@ -106,5 +108,3 @@ relational schema ensures that SSD records are never orphaned or corrupted.
   - POST /logs: Validate and consolidate new test data to the DB.
   - GET /logs: Retrieve all consolidated logs (Sorted by newest).
   - DELETE /logs/{id}: Securely remove a specific test record.
-
-Developed for the MaiStorage Technical Assessment - May 2026

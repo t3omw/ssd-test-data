@@ -243,7 +243,8 @@ function App() {
                   <th>Controller</th>
                   <th>Firmware</th>
                   <th>Temp</th>
-                  <th>Status</th>
+                  <th className="text-center">Status</th>
+                  <th className="text-center">Analysis</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -256,9 +257,14 @@ function App() {
                     <td>{log.controller}</td>
                     <td>{log.firmware}</td>
                     <td>{log.temperature}°C</td>
-                    <td>
+                    <td className="text-center">
                       <span className={`badge ${log.test_status.toLowerCase()}`}>
                         {log.test_status}
+                      </span>
+                    </td>
+                    <td className="text-center">
+                      <span className={log.ai_status === "Predictive" ? "analysis-predictive" : "analysis-normal"}>
+                        {log.ai_status === "Predictive" ? "Predictive" : "Normal"}
                       </span>
                     </td>
                     <td>

@@ -4,9 +4,9 @@ from sqlalchemy.orm import sessionmaker
 import os
 
 # Using the database service name from docker-compose
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@db:5432/maistorage")
+# DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@db:5432/maistorage")
 # Use localhost when running on Windows, use 'db' when running in Docker
-# DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/maistorage")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/maistorage")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

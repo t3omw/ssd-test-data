@@ -80,7 +80,8 @@ def export_logs(db: Session = Depends(database.get_db)):
     writer = csv.writer(output)
     
     # Write Header
-    writer.writerow(["ID", "Timestamp (MYT)", "Serial Number", "Controller", "Firmware", "Temp (°C)", "Status"])
+    writer.writerow(["ID", "Timestamp (MYT)", "Serial Number", "Controller", "Firmware (A)", "Temp (°C)", "Status",
+                     "AI Insights"])
     
     # Write Data
     for log in logs:
@@ -94,11 +95,11 @@ def export_logs(db: Session = Depends(database.get_db)):
             log.controller, 
             log.firmware, 
             f"{log.temperature}", 
-            log.test_status
+            log.test_status,
+            log.ai_status
         ])
     
-    # 3. FIX: StreamingResponse needs an iterator. 
-    # We use getvalue() to get the string and wrap it in an iterator.
+    # Use getvalue() to get the string and wrap it in an iterator.
     csv_content = output.getvalue()
     output.close() # Clean up memory
     
