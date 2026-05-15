@@ -29,7 +29,6 @@ from sqlalchemy import text # Add this import at the top
 @app.get("/health")
 def health_check(db: Session = Depends(database.get_db)):
     try:
-        # Fixed syntax for SQLAlchemy 2.0
         db.execute(text("SELECT 1"))
         return {"status": "Online", "database": "Connected", "version": "1.0.4-stable"}
     except Exception as e:

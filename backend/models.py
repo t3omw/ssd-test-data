@@ -6,9 +6,9 @@ class SSDTestLog(Base):
     __tablename__ = "test_logs"
     id = Column(Integer, primary_key=True, index=True)
     serial_number = Column(String, index=True)
-    controller = Column(String)  # e.g., PS5026-E26
+    controller = Column(String) 
     firmware = Column(String)
-    test_status = Column(String) # Pass/Fail
+    test_status = Column(String) 
     temperature = Column(Float)
     timestamp = Column(DateTime(timezone=True))
     ai_status = Column(String, nullable=True)

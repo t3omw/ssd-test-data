@@ -282,7 +282,6 @@ function App() {
         </section>
       </main>
 
-      {/* PLACED CORRECTLY: OUTSIDE THE CARDS AT THE BOTTOM */}
       <footer className="system-footer">
         <div className="sys-item">
           <strong>System Status:</strong> 
