@@ -12,14 +12,15 @@ function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [controllerFilter, setControllerFilter] = useState("All");
+  const [analysisFilter, setAnalysisFilter] = useState("All");
   
   // System Info State
-  // const [sysInfo, setSysInfo] = useState({ status: "Connecting...", database: "Checking...", version: "1.0.4" });
+  const [sysInfo, setSysInfo] = useState({ status: "Connecting...", database: "Checking..."});
 
   const [formData, setFormData] = useState({
     serial_number: '',
     controller: 'PS5026-E26',
-    firmware: '1.0.A',
+    firmware: '1.0',
     test_status: 'Pass',
     temperature: 35
   });
@@ -44,23 +45,23 @@ function App() {
       const res = await fetch(HEALTH_URL);
       if (res.ok) {
         const data = await res.json();
-        // setSysInfo(data);
+        setSysInfo(data);
       } else {
         throw new Error();
       }
     } catch {
-      // setSysInfo({ status: "Offline", database: "Disconnected", version: "1.0.4" });
+      setSysInfo({ status: "Offline", database: "Disconnected"});
     }
   };
 
   // Combined Lifecycle Hook
   useEffect(() => { 
     fetchLogs(); 
-    // fetchHealth();
+    fetchHealth();
     
     // Auto-refresh health status every 10 seconds (Observability)
-  //   const interval = setInterval(fetchHealth, 10000); 
-  //   return () => clearInterval(interval);
+    const interval = setInterval(fetchHealth, 10000); 
+    return () => clearInterval(interval);
   }, []);
 
   const handleSubmit = async (e) => {
@@ -114,7 +115,10 @@ function App() {
     const matchesSearch = log.serial_number.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "All" || log.test_status === statusFilter;
     const matchesController = controllerFilter === "All" || log.controller === controllerFilter;
-    return matchesSearch && matchesStatus && matchesController;
+    const matchesAnalysis = analysisFilter === "All" || log.ai_status === analysisFilter;
+
+    // Must return all four criteria
+    return matchesSearch && matchesStatus && matchesController && matchesAnalysis;
   });
 
   return (
@@ -150,9 +154,7 @@ function App() {
             <div className="form-group">
               <label>Firmware Version</label>
               <input 
-                type="number" 
-                step="0.1"    
-                min="0.1"     
+                type="text" 
                 value={formData.firmware}
                 onChange={e => setFormData({...formData, firmware: e.target.value})}
                 placeholder="e.g. 1.0"
@@ -197,94 +199,114 @@ function App() {
           </form>
         </section>
 
-        <section className="table-card">
-          <div className="table-header">
-            <h2>Database Records</h2>
-              <div className="filter-controls">
-              <input 
-                type="text" 
-                className="search-bar" 
-                placeholder="Search Serial..." 
-                value={searchTerm} 
-                onChange={(e) => setSearchTerm(e.target.value)} 
-              />
-              
-              <div className="select-wrapper filter-width">
-                <select className="filter-select" value={controllerFilter} onChange={(e) => setControllerFilter(e.target.value)}>
-                  <option value="All">All Controllers</option>
-                  <option value="PS5026-E26">PS5026-E26</option>
-                  <option value="PS5021-E21">PS5021-E21</option>
-                  <option value="PS5018-E18">PS5018-E18</option>
-                  <option value="PS5013-E13">PS5013-E13</option>
-                </select>
-                <ChevronDown className="select-icon" size={16} />
-              </div>
+      <section className="table-card">
+        <div className="table-header">
+          <h2>Database Records</h2>
+          <div className="filter-controls">
+            <input 
+              type="text" 
+              className="search-bar" 
+              placeholder="Search Serial..." 
+              value={searchTerm} 
+              onChange={(e) => setSearchTerm(e.target.value)} 
+            />
+            
+            <div className="select-wrapper filter-width">
+              <select className="filter-select" value={controllerFilter} onChange={(e) => setControllerFilter(e.target.value)}>
+                <option value="All">All Controllers</option>
+                <option value="PS5026-E26">PS5026-E26</option>
+                <option value="PS5021-E21">PS5021-E21</option>
+                <option value="PS5018-E18">PS5018-E18</option>
+                <option value="PS5013-E13">PS5013-E13</option>
+              </select>
+              <ChevronDown className="select-icon" size={16} />
+            </div>
 
-              <div className="select-wrapper filter-width">
-                <select className="filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-                  <option value="All">All Status</option>
-                  <option value="Pass">Pass</option>
-                  <option value="Warning">Warning</option>
-                  <option value="Fail">Fail</option>
-                </select>
-                <ChevronDown className="select-icon" size={16} />
-              </div>
+            <div className="select-wrapper filter-width">
+              <select className="filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                <option value="All">All Status</option>
+                <option value="Pass">Pass</option>
+                <option value="Warning">Warning</option>
+                <option value="Fail">Fail</option>
+              </select>
+              <ChevronDown className="select-icon" size={16} />
+            </div>
+
+            {/* FIXED: Analysis filter is now inside the filter-controls div */}
+            <div className="select-wrapper filter-width">
+              <select 
+                className="filter-select" 
+                value={analysisFilter} 
+                onChange={(e) => setAnalysisFilter(e.target.value)}
+              >
+                <option value="All">All Analysis</option>
+                <option value="Normal">Normal</option>
+                <option value="Predictive">Predictive</option>
+              </select>
+              <ChevronDown className="select-icon" size={16} />
             </div>
           </div>
-          
-          <div className="table-wrapper">
+        </div>
+
+        <div className="table-wrapper">
             {loading && logs.length === 0 ? (
               <div className="loader">Initializing database connection...</div>
             ) : (
               <table className="data-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Timestamp</th>
-                  <th>Serial Number</th>
-                  <th>Controller</th>
-                  <th>Firmware</th>
-                  <th>Temp</th>
-                  <th className="text-center">Status</th>
-                  <th className="text-center">Analysis</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredLogs.map((log) => (
-                  <tr key={log.id}>
-                    <td className="id-cell">{log.id}</td>
-                    <td>{new Date(log.timestamp).toLocaleString('en-MY')}</td>
-                    <td className="bold">{log.serial_number}</td>
-                    <td>{log.controller}</td>
-                    <td>{log.firmware}A</td>
-                    <td>{log.temperature}°C</td>
-                    <td className="text-center">
-                      <span className={`badge ${log.test_status.toLowerCase()}`}>
-                        {log.test_status}
-                      </span>
-                    </td>
-                    <td className="text-center">
-                      <span className={log.ai_status === "Predictive" ? "analysis-predictive" : "analysis-normal"}>
-                        {log.ai_status === "Predictive" ? "Predictive" : "Normal"}
-                      </span>
-                    </td>
-                    <td>
-                      <button className="delete-btn" onClick={() => handleDelete(log.id)}>Delete</button>
-                    </td>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Timestamp</th>
+                    <th>Serial Number</th>
+                    <th>Controller</th>
+                    <th>Firmware</th>
+                    <th>Temp</th>
+                    <th className="text-center">Status</th>
+                    <th className="text-center">Analysis</th>
+                    <th>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filteredLogs.map((log) => (
+                    <tr key={log.id}>
+                      <td className="id-cell">{log.id}</td>
+                      <td>{new Date(log.timestamp).toLocaleString('en-MY')}</td>
+                      <td className="bold">{log.serial_number}</td>
+                      <td>{log.controller}</td>
+                      <td>{log.firmware}</td>
+                      <td>{log.temperature}°C</td>
+                      <td className="text-center">
+                        <span className={`badge ${log.test_status.toLowerCase()}`}>{log.test_status}</span>
+                      </td>
+                      <td className="text-center">
+                        <span className={log.ai_status === "Predictive" ? "analysis-predictive" : "analysis-normal"}>
+                          {log.ai_status === "Predictive" ? "Predictive" : "Normal"}
+                        </span>
+                      </td>
+                      <td><button className="delete-btn" onClick={() => handleDelete(log.id)}>Delete</button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             )}
-            {!loading && filteredLogs.length === 0 && (
-              <div className="loader">No records match your filters.</div>
-            )}
+            {!loading && filteredLogs.length === 0 && <div className="loader">No records match your filters.</div>}
           </div>
         </section>
       </main>
 
-      
+      <footer className="system-footer">
+        <div className="footer-left-group">
+          <div className="sys-item">
+            <strong>System Status:</strong> 
+            <span className={sysInfo.status === "Online" ? "status-green" : "status-red"}>
+              ● {sysInfo.status}
+            </span>
+          </div>
+          <div className="sys-item">
+            <strong>Database:</strong> {sysInfo.database}
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -4,8 +4,7 @@ from datetime import datetime
 class SSDLogCreate(BaseModel):
     serial_number: str = Field(..., min_length=1)
     controller: str = Field(..., min_length=1)
-    
-    # CHANGED: firmware is now a float and must be greater than 0
+
     firmware: float = Field(..., gt=0, description="Firmware must be a positive numerical value")
     
     test_status: str = Field(..., pattern="^(Pass|Fail|Warning)$")
@@ -22,7 +21,6 @@ class SSDLogCreate(BaseModel):
 class SSDLogResponse(SSDLogCreate):
     id: int
     timestamp: datetime
-    ai_status: str # Include this since you added it to the model
-
+    ai_status: str 
     class Config:
         from_attributes = True

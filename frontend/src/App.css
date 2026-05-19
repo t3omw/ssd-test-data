@@ -199,7 +199,8 @@ input, select {
 .filter-controls {
   display: flex;
   align-items: center;            
-  gap: 12px;
+  gap: 10px;
+  flex-wrap: nowrap;
 }
 
 .filter-select {
@@ -292,7 +293,7 @@ select:focus {
 
 .filter-width {
   width: auto;
-  min-width: 160px;
+  min-width: 150px;
 }
 
 .filter-select {
@@ -335,8 +336,8 @@ select:focus {
 .system-footer {
   margin-top: 30px;
   padding: 15px;
-  background: #222; 
-  color: #aaa;
+  background: var(--bg); 
+  color: #222;
   border-radius: 8px;
   display: flex;
   justify-content: space-between;
@@ -388,4 +389,16 @@ select:focus {
   font-size: 12px;
   text-align: center;
   display: block; 
+}
+
+.footer-left-group {
+  display: flex;
+  gap: 30px; 
+  align-items: center;
+}
+
+.sys-item {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
 }
