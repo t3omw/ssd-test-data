@@ -4,17 +4,12 @@ from datetime import datetime
 class SSDLogCreate(BaseModel):
     serial_number: str = Field(..., min_length=1)
     controller: str = Field(..., min_length=1)
-    firmware: str = Field(..., min_length=1)
+    
+    # CHANGED: firmware is now a float and must be greater than 0
+    firmware: float = Field(..., gt=0, description="Firmware must be a positive numerical value")
+    
     test_status: str = Field(..., pattern="^(Pass|Fail|Warning)$")
     temperature: float = Field(..., ge=-40, le=125)
-
-    @field_validator('firmware')
-    @classmethod
-    def validate_firmware(cls, v: str):
-        # Check if the user input looks like a negative number
-        if v.strip().startswith('-'):
-            raise ValueError('Firmware version cannot be negative')
-        return v
 
     @field_validator('serial_number', 'controller')
     @classmethod
@@ -23,10 +18,11 @@ class SSDLogCreate(BaseModel):
             raise ValueError('Field cannot be empty')
         return v
 
-# ADD THIS: Schema for outgoing data (GET/Response)
+# Schema for outgoing data (GET/Response)
 class SSDLogResponse(SSDLogCreate):
     id: int
-    timestamp: datetime # This will now show "2024-05-20T14:30:00"
+    timestamp: datetime
+    ai_status: str # Include this since you added it to the model
 
     class Config:
         from_attributes = True

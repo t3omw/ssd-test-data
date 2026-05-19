@@ -14,7 +14,7 @@ function App() {
   const [controllerFilter, setControllerFilter] = useState("All");
   
   // System Info State
-  const [sysInfo, setSysInfo] = useState({ status: "Connecting...", database: "Checking...", version: "1.0.4" });
+  // const [sysInfo, setSysInfo] = useState({ status: "Connecting...", database: "Checking...", version: "1.0.4" });
 
   const [formData, setFormData] = useState({
     serial_number: '',
@@ -44,23 +44,23 @@ function App() {
       const res = await fetch(HEALTH_URL);
       if (res.ok) {
         const data = await res.json();
-        setSysInfo(data);
+        // setSysInfo(data);
       } else {
         throw new Error();
       }
     } catch {
-      setSysInfo({ status: "Offline", database: "Disconnected", version: "1.0.4" });
+      // setSysInfo({ status: "Offline", database: "Disconnected", version: "1.0.4" });
     }
   };
 
   // Combined Lifecycle Hook
   useEffect(() => { 
     fetchLogs(); 
-    fetchHealth();
+    // fetchHealth();
     
     // Auto-refresh health status every 10 seconds (Observability)
-    const interval = setInterval(fetchHealth, 10000); 
-    return () => clearInterval(interval);
+  //   const interval = setInterval(fetchHealth, 10000); 
+  //   return () => clearInterval(interval);
   }, []);
 
   const handleSubmit = async (e) => {
@@ -150,10 +150,12 @@ function App() {
             <div className="form-group">
               <label>Firmware Version</label>
               <input 
-                type="text" 
+                type="number" 
+                step="0.1"    
+                min="0.1"     
                 value={formData.firmware}
                 onChange={e => setFormData({...formData, firmware: e.target.value})}
-                placeholder="e.g. 1.0.A"
+                placeholder="e.g. 1.0"
                 required 
               />
             </div>
@@ -255,7 +257,7 @@ function App() {
                     <td>{new Date(log.timestamp).toLocaleString('en-MY')}</td>
                     <td className="bold">{log.serial_number}</td>
                     <td>{log.controller}</td>
-                    <td>{log.firmware}</td>
+                    <td>{log.firmware}A</td>
                     <td>{log.temperature}°C</td>
                     <td className="text-center">
                       <span className={`badge ${log.test_status.toLowerCase()}`}>
@@ -282,23 +284,7 @@ function App() {
         </section>
       </main>
 
-      <footer className="system-footer">
-        <div className="sys-item">
-          <strong>System Status:</strong> 
-          <span className={sysInfo.status === "Online" ? "status-green" : "status-red"}>
-            ● {sysInfo.status}
-          </span>
-        </div>
-        <div className="sys-item">
-          <strong>Database:</strong> {sysInfo.database}
-        </div>
-        <div className="sys-item">
-          <strong>Deployment Image:</strong>v{sysInfo.version}
-        </div>
-        <div className="sys-item">
-          <strong>Region:</strong>MYT (UTC+8)
-        </div>
-      </footer>
+      
     </div>
   );
 }
